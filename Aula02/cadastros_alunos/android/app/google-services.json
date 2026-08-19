@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "283641046999",
+    "project_id": "cadastro-de-alunos-eeba3",
+    "storage_bucket": "cadastro-de-alunos-eeba3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:283641046999:android:ec894ec3f436f67fe30d92",
+        "android_client_info": {
+          "package_name": "com.example.cadastros_alunos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBd1KLV5rRl7rTByETAN9ElYRKSLGZY5wg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
