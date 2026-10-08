@@ -1,0 +1,5 @@
+.gradle/
+/local.properties
+/GeneratedPluginRegistrant.java
+/.cxx/
+**/build/

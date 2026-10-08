@@ -1,0 +1,17 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Android/IDE
+.gradle/
+.idea/
+*.iml
+android/local.properties
+android/app/google-services.json
+android/app/debug
+android/app/profile
+android/app/release

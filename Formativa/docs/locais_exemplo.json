@@ -1,0 +1,12 @@
+[
+  {"nome":"Academia Fitness","categoria":"Academia","cidade":"São Paulo","avaliacao":4.8,"distancia":1.2,"horario":"06:00 - 22:00","descricao":"Academia completa para treino e bem-estar.","favorito":false},
+  {"nome":"Café Central","categoria":"Café","cidade":"São Paulo","avaliacao":4.6,"distancia":0.8,"horario":"08:00 - 20:00","descricao":"Café artesanal no centro da cidade.","favorito":false},
+  {"nome":"Restaurante Sabor","categoria":"Restaurante","cidade":"São Paulo","avaliacao":4.5,"distancia":2.1,"horario":"11:00 - 23:00","descricao":"Cozinha brasileira contemporânea.","favorito":true},
+  {"nome":"Livraria Horizonte","categoria":"Livraria","cidade":"Campinas","avaliacao":4.7,"distancia":1.6,"horario":"09:00 - 21:00","descricao":"Livros, cafe e espaco para leitura.","favorito":false},
+  {"nome":"Academia Movimento","categoria":"Academia","cidade":"Campinas","avaliacao":4.4,"distancia":3.0,"horario":"05:30 - 23:00","descricao":"Musculacao e aulas coletivas.","favorito":false},
+  {"nome":"Cinema Plaza","categoria":"Cinema","cidade":"Campinas","avaliacao":4.3,"distancia":2.4,"horario":"13:00 - 23:30","descricao":"Salas de cinema no Shopping Plaza.","favorito":false},
+  {"nome":"Parque da Cidade","categoria":"Lazer","cidade":"Jundiaí","avaliacao":4.9,"distancia":1.0,"horario":"06:00 - 18:00","descricao":"Área verde para caminhadas e lazer.","favorito":true},
+  {"nome":"Padaria Bella","categoria":"Padaria","cidade":"Jundiaí","avaliacao":4.5,"distancia":0.6,"horario":"06:00 - 21:00","descricao":"Pães artesanais e café da manhã.","favorito":false},
+  {"nome":"Museu Histórico","categoria":"Cultura","cidade":"Jundiaí","avaliacao":4.2,"distancia":2.8,"horario":"10:00 - 17:00","descricao":"Exposições sobre a história local.","favorito":false},
+  {"nome":"Pet Care","categoria":"Pet Shop","cidade":"Campinas","avaliacao":4.6,"distancia":1.9,"horario":"08:00 - 19:00","descricao":"Produtos e cuidados para animais.","favorito":false}
+]
