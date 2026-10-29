@@ -5,7 +5,8 @@ import '../models/local.dart';
 /// Ponto unico de acesso aos documentos da colecao `locais`.
 class LocalService {
   LocalService({FirebaseFirestore? firestore})
-      : _locais = (firestore ?? FirebaseFirestore.instance).collection('locais');
+      : _locais =
+            (firestore ?? FirebaseFirestore.instance).collection('locais');
 
   final CollectionReference<Map<String, dynamic>> _locais;
 
@@ -17,7 +18,8 @@ class LocalService {
 
   Future<void> adicionar(Local local) => _locais.add(local.toMap());
 
-  Future<void> atualizar(Local local) => _locais.doc(local.id).update(local.toMap());
+  Future<void> atualizar(Local local) =>
+      _locais.doc(local.id).update(local.toMap());
 
   Future<void> excluir(String id) => _locais.doc(id).delete();
 

@@ -1,73 +1,222 @@
 import 'package:flutter/material.dart';
 
-import '../dialogs/confirm_delete.dart';
+import '../data/mock_locais.dart';
 import '../models/local.dart';
-import '../services/local_service.dart';
-import '../widgets/local_card.dart';
-import '../widgets/local_form.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_bottom_navigation.dart';
+import '../widgets/local_result_card.dart';
 import 'detalhes_screen.dart';
 
 class ResultadosScreen extends StatefulWidget {
-  const ResultadosScreen({super.key, required this.cidade, required this.pesquisa});
+  const ResultadosScreen({
+    super.key,
+    required this.cidade,
+    required this.pesquisa,
+    this.somenteFavoritos = false,
+  });
+
   final String cidade;
   final String pesquisa;
+  final bool somenteFavoritos;
+
   @override
   State<ResultadosScreen> createState() => _ResultadosScreenState();
 }
 
 class _ResultadosScreenState extends State<ResultadosScreen> {
-  final _service = LocalService();
   late final TextEditingController _pesquisa;
-  late String _cidade;
-  String _categoria = 'Todos';
-  bool _somenteFavoritos = false;
-  static const _cidades = ['Todas', 'São Paulo', 'Campinas', 'Jundiaí'];
+  late List<Local> _locais;
+  late bool _somenteFavoritos;
+  String _filtro = 'Todos';
 
-  @override void initState() { super.initState(); _pesquisa = TextEditingController(text: widget.pesquisa); _cidade = widget.cidade; }
-  @override void dispose() { _pesquisa.dispose(); super.dispose(); }
+  static const _filtros = ['Todos', 'Academias', 'Restaurantes'];
 
-  void _abrirFormulario([Local? local]) => showModalBottomSheet<bool>(context: context, isScrollControlled: true, builder: (_) => LocalForm(local: local, onSave: (item) async { if (local == null) { await _service.adicionar(item); } else { await _service.atualizar(item); } })).then((saved) { if (saved == true && mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(local == null ? 'Local cadastrado com sucesso.' : 'Local atualizado com sucesso.'))); });
-
-  Future<void> _excluir(Local local) async {
-    if (!await confirmarExclusao(context)) return;
-    try { await _service.excluir(local.id); if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Local excluido com sucesso.'))); }
-    catch (_) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nao foi possivel excluir o local.'))); }
-  }
-
-  List<Local> _filtrar(List<Local> locais) {
-    final termo = _pesquisa.text.trim().toLowerCase();
-    return locais.where((l) => (_cidade == 'Todas' || l.cidade == _cidade) && (_categoria == 'Todos' || l.categoria == _categoria) && (!_somenteFavoritos || l.favorito) && (termo.isEmpty || l.nome.toLowerCase().contains(termo) || l.categoria.toLowerCase().contains(termo))).toList();
+  @override
+  void initState() {
+    super.initState();
+    _pesquisa = TextEditingController(text: widget.pesquisa);
+    _locais = List.of(mockLocais);
+    _somenteFavoritos = widget.somenteFavoritos;
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Resultados')),
-    floatingActionButton: FloatingActionButton.extended(onPressed: () => _abrirFormulario(), icon: const Icon(Icons.add), label: const Text('Cadastrar')),
-    body: StreamBuilder<List<Local>>(
-      stream: _service.listarLocais(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-        if (snapshot.hasError) return const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('Erro ao carregar os locais.', textAlign: TextAlign.center)));
-        final locais = snapshot.data ?? [];
-        final categorias = locais
-          .map((local) => local.categoria)
-          .where((categoria) => categoria.isNotEmpty)
-          .toSet()
-          .toList()
-          ..sort();
-        categorias.insert(0, 'Todos');
-        if (!categorias.contains(_categoria)) _categoria = 'Todos';
-        final resultados = _filtrar(locais);
-        return Column(children: [
-          Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 4), child: TextField(controller: _pesquisa, onChanged: (_) => setState(() {}), decoration: const InputDecoration(prefixIcon: Icon(Icons.search), labelText: 'Pesquisar nome ou categoria', border: OutlineInputBorder()))),
-          SingleChildScrollView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 12), child: Row(children: [
-            DropdownButton<String>(value: _cidade, items: _cidades.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(), onChanged: (v) => setState(() => _cidade = v!)), const SizedBox(width: 16),
-            DropdownButton<String>(value: _categoria, items: categorias.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(), onChanged: (v) => setState(() => _categoria = v!)),
-            FilterChip(label: const Text('Favoritos'), selected: _somenteFavoritos, onSelected: (v) => setState(() => _somenteFavoritos = v)),
-          ])),
-          Expanded(child: resultados.isEmpty ? const Center(child: Text('Nenhum local encontrado.')) : ListView.builder(padding: const EdgeInsets.fromLTRB(12, 4, 12, 90), itemCount: resultados.length, itemBuilder: (_, i) { final local = resultados[i]; return LocalCard(local: local, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DetalhesScreen(local: local))), onEdit: () => _abrirFormulario(local), onDelete: () => _excluir(local)); })),
-        ]);
-      },
-    ),
-  );
+  void dispose() {
+    _pesquisa.dispose();
+    super.dispose();
+  }
+
+  List<Local> get _resultados {
+    final termo = _pesquisa.text.trim().toLowerCase();
+    return _locais.where((local) {
+      final correspondeCidade =
+          widget.cidade == 'Todas' || local.cidade == widget.cidade;
+      final correspondeFiltro = switch (_filtro) {
+        'Academias' => local.categoria == 'Academia',
+        'Restaurantes' => local.categoria == 'Restaurante',
+        _ => true,
+      };
+      final correspondeBusca = termo.isEmpty ||
+          local.nome.toLowerCase().contains(termo) ||
+          local.categoria.toLowerCase().contains(termo);
+      return correspondeCidade &&
+          correspondeFiltro &&
+          correspondeBusca &&
+          (!_somenteFavoritos || local.favorito);
+    }).toList(growable: false);
+  }
+
+  void _alternarFavorito(Local local) {
+    setState(() {
+      final index = _locais.indexWhere((item) => item.id == local.id);
+      _locais[index] = local.copyWith(favorito: !local.favorito);
+    });
+  }
+
+  void _onNavigationSelected(int index) {
+    if (index == 0) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      return;
+    }
+    if (index == 1) {
+      setState(() => _somenteFavoritos = true);
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Seu perfil estará disponível em breve.')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final resultados = _resultados;
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+              child: TextField(
+                controller: _pesquisa,
+                autofocus: false,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  hintText: 'Buscar locais...',
+                  prefixIcon:
+                      const Icon(Icons.search_rounded, color: AppColors.ink),
+                  suffixIcon: IconButton(
+                    tooltip: 'Limpar busca',
+                    onPressed: _pesquisa.text.isEmpty
+                        ? null
+                        : () {
+                            _pesquisa.clear();
+                            setState(() {});
+                          },
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 44,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: _filtros.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final filtro = _filtros[index];
+                  final ativo = filtro == _filtro;
+                  return ChoiceChip(
+                    label: Text(filtro),
+                    avatar: filtro == 'Todos'
+                        ? Icon(
+                            Icons.grid_view_rounded,
+                            color: ativo ? Colors.white : AppColors.muted,
+                            size: 16,
+                          )
+                        : null,
+                    selected: ativo,
+                    selectedColor: AppColors.primary,
+                    labelStyle: TextStyle(
+                      color: ativo ? Colors.white : AppColors.ink,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    onSelected: (_) => setState(() => _filtro = filtro),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: resultados.isEmpty
+                  ? _EmptyResults(onShowAll: () {
+                      setState(() {
+                        _somenteFavoritos = false;
+                        _filtro = 'Todos';
+                        _pesquisa.clear();
+                      });
+                    })
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 18),
+                      itemCount: resultados.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final local = resultados[index];
+                        return LocalResultCard(
+                          local: local,
+                          onFavorite: () => _alternarFavorito(local),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => DetalhesScreen(
+                                local: local,
+                                onFavoriteChanged: _alternarFavorito,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: _somenteFavoritos ? 1 : 0,
+        onSelected: _onNavigationSelected,
+      ),
+    );
+  }
+}
+
+class _EmptyResults extends StatelessWidget {
+  const _EmptyResults({required this.onShowAll});
+  final VoidCallback onShowAll;
+
+  @override
+  Widget build(BuildContext context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.search_off_rounded,
+                  size: 48, color: AppColors.muted),
+              const SizedBox(height: 12),
+              const Text(
+                'Nenhum local encontrado',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Tente outro termo ou remova os filtros aplicados.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.muted),
+              ),
+              const SizedBox(height: 14),
+              TextButton(onPressed: onShowAll, child: const Text('Ver todos')),
+            ],
+          ),
+        ),
+      );
 }

@@ -10,6 +10,8 @@ class Local {
     required this.horario,
     required this.descricao,
     required this.favorito,
+    this.imagemUrl = '',
+    this.totalAvaliacoes = 124,
   });
 
   final String id;
@@ -21,6 +23,8 @@ class Local {
   final String horario;
   final String descricao;
   final bool favorito;
+  final String imagemUrl;
+  final int totalAvaliacoes;
 
   factory Local.fromMap(String id, Map<String, dynamic> data) => Local(
         id: id,
@@ -32,11 +36,18 @@ class Local {
         horario: data['horario']?.toString() ?? '',
         descricao: data['descricao']?.toString() ?? '',
         favorito: data['favorito'] == true,
+        imagemUrl: data['imagemUrl']?.toString() ?? '',
+        totalAvaliacoes: _asInt(data['totalAvaliacoes'], 124),
       );
 
   static double _asDouble(dynamic value) {
     if (value is num) return value.toDouble();
-    return double.tryParse(value?.toString() ?? '') ?? 0;
+    return double.tryParse(value?.toString().replaceAll(',', '.') ?? '') ?? 0;
+  }
+
+  static int _asInt(dynamic value, int fallback) {
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? fallback;
   }
 
   Map<String, dynamic> toMap() => {
@@ -48,6 +59,8 @@ class Local {
         'horario': horario,
         'descricao': descricao,
         'favorito': favorito,
+        'imagemUrl': imagemUrl,
+        'totalAvaliacoes': totalAvaliacoes,
       };
 
   Local copyWith({bool? favorito}) => Local(
@@ -60,5 +73,7 @@ class Local {
         horario: horario,
         descricao: descricao,
         favorito: favorito ?? this.favorito,
+        imagemUrl: imagemUrl,
+        totalAvaliacoes: totalAvaliacoes,
       );
 }

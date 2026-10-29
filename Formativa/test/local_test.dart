@@ -15,4 +15,17 @@ void main() {
     expect(local.toMap()['nome'], 'Cafe');
     expect(local.toMap().containsKey('id'), isFalse);
   });
+
+  test('converte valores numericos em texto e preserva o favorito ao copiar', () {
+    final local = Local.fromMap('abc', {
+      'avaliacao': '4.5',
+      'distancia': '1,2',
+      'favorito': true,
+    });
+
+    expect(local.avaliacao, 4.5);
+    expect(local.distancia, 1.2);
+    expect(local.copyWith().favorito, isTrue);
+    expect(local.copyWith(favorito: false).favorito, isFalse);
+  });
 }

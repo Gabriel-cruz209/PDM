@@ -39,8 +39,12 @@ class _LocalFormState extends State<LocalForm> {
 
   @override
   void dispose() {
-    _nome.dispose(); _categoria.dispose(); _horario.dispose();
-    _avaliacao.dispose(); _distancia.dispose(); _descricao.dispose();
+    _nome.dispose();
+    _categoria.dispose();
+    _horario.dispose();
+    _avaliacao.dispose();
+    _distancia.dispose();
+    _descricao.dispose();
     super.dispose();
   }
 
@@ -49,18 +53,26 @@ class _LocalFormState extends State<LocalForm> {
     setState(() => _salvando = true);
     try {
       await widget.onSave(Local(
-        id: widget.local?.id ?? '', nome: _nome.text.trim(),
-        categoria: _categoria.text.trim(), cidade: _cidade!,
-        horario: _horario.text.trim(), descricao: _descricao.text.trim(),
+        id: widget.local?.id ?? '',
+        nome: _nome.text.trim(),
+        categoria: _categoria.text.trim(),
+        cidade: _cidade!,
+        horario: _horario.text.trim(),
+        descricao: _descricao.text.trim(),
         avaliacao: double.parse(_avaliacao.text.replaceAll(',', '.')),
         distancia: double.parse(_distancia.text.replaceAll(',', '.')),
         favorito: widget.local?.favorito ?? false,
       ));
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nao foi possivel realizar a operacao.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Nao foi possivel realizar a operacao.')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _salvando = false);
     }
@@ -71,24 +83,83 @@ class _LocalFormState extends State<LocalForm> {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
-    child: Form(
-      key: _formKey,
-      child: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(widget.local == null ? 'Cadastrar local' : 'Editar local', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
-          TextFormField(controller: _nome, decoration: const InputDecoration(labelText: 'Nome'), validator: (v) => _obrigatorio(v, 'Nome')),
-          TextFormField(controller: _categoria, decoration: const InputDecoration(labelText: 'Categoria'), validator: (v) => _obrigatorio(v, 'Categoria')),
-          DropdownButtonFormField<String>(value: _cidade, decoration: const InputDecoration(labelText: 'Cidade'), items: _cidades.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(), onChanged: (v) => setState(() => _cidade = v), validator: (v) => v == null ? 'Cidade e obrigatoria.' : null),
-          TextFormField(controller: _horario, decoration: const InputDecoration(labelText: 'Horário'), validator: (v) => _obrigatorio(v, 'Horário')),
-          TextFormField(controller: _avaliacao, decoration: const InputDecoration(labelText: 'Avaliação (0 a 5)'), keyboardType: const TextInputType.numberWithOptions(decimal: true), validator: (v) { final n = double.tryParse((v ?? '').replaceAll(',', '.')); return n == null || n < 0 || n > 5 ? 'Informe um número de 0 a 5.' : null; }),
-          TextFormField(controller: _distancia, decoration: const InputDecoration(labelText: 'Distância (km)'), keyboardType: const TextInputType.numberWithOptions(decimal: true), validator: (v) { final n = double.tryParse((v ?? '').replaceAll(',', '.')); return n == null || n < 0 ? 'Informe uma distância válida.' : null; }),
-          TextFormField(controller: _descricao, decoration: const InputDecoration(labelText: 'Descrição'), maxLines: 3, validator: (v) => _obrigatorio(v, 'Descrição')),
-          const SizedBox(height: 20),
-          FilledButton.icon(onPressed: _salvando ? null : _submit, icon: _salvando ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.save), label: Text(_salvando ? 'Salvando...' : 'Salvar')),
-        ]),
-      ),
-    ),
-  );
+        padding: EdgeInsets.fromLTRB(
+            20, 20, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                      widget.local == null ? 'Cadastrar local' : 'Editar local',
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                      controller: _nome,
+                      decoration: const InputDecoration(labelText: 'Nome'),
+                      validator: (v) => _obrigatorio(v, 'Nome')),
+                  TextFormField(
+                      controller: _categoria,
+                      decoration: const InputDecoration(labelText: 'Categoria'),
+                      validator: (v) => _obrigatorio(v, 'Categoria')),
+                  DropdownButtonFormField<String>(
+                      initialValue: _cidade,
+                      decoration: const InputDecoration(labelText: 'Cidade'),
+                      items: _cidades
+                          .map(
+                              (c) => DropdownMenuItem(value: c, child: Text(c)))
+                          .toList(),
+                      onChanged: (v) => setState(() => _cidade = v),
+                      validator: (v) =>
+                          v == null ? 'Cidade e obrigatoria.' : null),
+                  TextFormField(
+                      controller: _horario,
+                      decoration: const InputDecoration(labelText: 'Horário'),
+                      validator: (v) => _obrigatorio(v, 'Horário')),
+                  TextFormField(
+                      controller: _avaliacao,
+                      decoration:
+                          const InputDecoration(labelText: 'Avaliação (0 a 5)'),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      validator: (v) {
+                        final n =
+                            double.tryParse((v ?? '').replaceAll(',', '.'));
+                        return n == null || n < 0 || n > 5
+                            ? 'Informe um número de 0 a 5.'
+                            : null;
+                      }),
+                  TextFormField(
+                      controller: _distancia,
+                      decoration:
+                          const InputDecoration(labelText: 'Distância (km)'),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      validator: (v) {
+                        final n =
+                            double.tryParse((v ?? '').replaceAll(',', '.'));
+                        return n == null || n < 0
+                            ? 'Informe uma distância válida.'
+                            : null;
+                      }),
+                  TextFormField(
+                      controller: _descricao,
+                      decoration: const InputDecoration(labelText: 'Descrição'),
+                      maxLines: 3,
+                      validator: (v) => _obrigatorio(v, 'Descrição')),
+                  const SizedBox(height: 20),
+                  FilledButton.icon(
+                      onPressed: _salvando ? null : _submit,
+                      icon: _salvando
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.save),
+                      label: Text(_salvando ? 'Salvando...' : 'Salvar')),
+                ]),
+          ),
+        ),
+      );
 }
